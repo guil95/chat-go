@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .loginForm {
+            border: 3px solid black;
+            border-radius: 5px;
+            max-width: 300px;
+            text-align: justify-all;
+            margin: 25px auto;
+            width: 60%;
+            padding: 10px;
+        }
+
+        .signupForm {
+            border: 3px solid black;
+            border-radius: 5px;
+            max-width: 300px;
+            text-align: justify-all;
+            margin: 25px auto;
+            width: 60%;
+            padding: 10px;
+        }
+
+        .loginInput {
+            max-width: 250px;
+            margin: 10px;
+            height: 42px;
+            border-radius: 10px;
+            font-family: "Arial Black";
+        }
+
+        .signupInput {
+            max-width: 250px;
+            margin: 10px;
+            height: 42px;
+            border-radius: 10px;
+            font-family: "Arial Black";
+        }
+
+        .container{
+            margin: auto;
+            width: 60%;
+            border: 5px solid black;
+            padding: 10px;
+            font-family: "Arial Black";
+            border-radius: 10px;
+        }
+
+        .inputSubmitLogin{
+            background-color: #04AA6D;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        .inputSubmitSignup{
+            background-color: #0f6ebd;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+    </style>
+    <title>Login</title>
+    <script type="text/javascript">
+        window.onload = function () {
+            let userLogin = document.getElementById("userLogin");
+            let passwordLogin = document.getElementById("passwordLogin");
+            let userSignup = document.getElementById("signupUser");
+            let passwordSignup = document.getElementById("signupPassword");
+
+            const redirectToChat = async () => {
+                window.location.href = "http://" + document.location.host + "/chat/1";
+            }
+
+            const signupRequest = async (username, password) => {
+                try {
+                    const signupInfo = await fetch(
+                        "http://" + document.location.host + "/users",
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            method: "POST",
+                            body: JSON.stringify({
+                                username: username,
+                                password: password,
+                            }),
+                        }
+                    );
+
+                    const signUpDataResponse = await signupInfo.json();
+;
+                    if (signUpDataResponse.error) {
+                        return signUpDataResponse.error
+                    }
+
+                    return signupInfo.status === 201;
+                } catch (error) {
+                    return "could not sign user in"
+                }
+            };
+
+            document.getElementById("formSignup").onsubmit = async function (e) {
+                e.preventDefault()
+                let username = userSignup.value
+                let password = passwordSignup.value
+                if (!username || !password) {
+                    return false;
+                } else {
+                    try {
+                        let signup = await signupRequest(username, password)
+                        if (!signup) {
+                            alert("error to save user")
+                            return false
+                        }
+
+                        await redirectToChat()
+                    } catch (error) {
+                        console.log(error)
+                        return ""
+                    }
+                }
+                return false;
+            };
+
+            const loginRequest = async (username, password) => {
+                try {
+                    const loginInfo = await fetch(
+                        "http://" + document.location.host + "/login",
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            method: "POST",
+                            body: JSON.stringify({
+                                username: username,
+                                password: password,
+                            }),
+                        }
+                    );
+
+                    return loginInfo.status === 200;
+                } catch (error) {
+                    alert(error)
+                    return ""
+                }
+            };
+            document.getElementById("formLogin").onsubmit = async function (e) {
+                e.preventDefault()
+                let username = userLogin.value
+                let password = passwordLogin.value
+                if (!userLogin || !password) {
+                    return false;
+                } else {
+                    let res = await loginRequest(username, password)
+                    if (!res) {
+                        alert("password or user invalid")
+                        return false
+                    }
+                    if (res.error) {
+                        alert(res.error)
+                        return
+                    }
+                    await redirectToChat()
+                }
+                return false;
+            };
+        };
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="loginForm">
+        <h2>Login form</h2>
+        <form id="formLogin">
+            <label for="userLogin">Username
+                <input class="loginInput" type="text" id="userLogin" size="64" autofocus/>
+            </label>
+            <label for="passwordLogin">Password
+                <input class="loginInput" type="password" id="passwordLogin" size="64" autofocus/>
+            </label>
+            <input class="inputSubmitLogin" type="submit" value="Login" style="margin-top: 10px"/>
+        </form>
+    </div>
+    <div class="signupForm">
+        <h2>Sign Up form</h2>
+        <form id="formSignup">
+            <label for="signupUser">Username
+                <input class="signupInput" type="text" id="signupUser" size="64" autofocus/>
+            </label>
+            <label for="signupPassword">Password
+                <input class="signupInput" type="password" id="signupPassword" size="64" autofocus/>
+            </label>
+            <input class="inputSubmitSignup"  type="submit" value="Sign Up"/>
+        </form>
+    </div>
+</div>
+</body>
+</html>

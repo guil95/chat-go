@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat-bot</title>
+    <style>
+        html {
+            overflow: hidden;
+        }
+
+        body {
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            background: green;
+        }
+
+        #chat {
+            background: white;
+            margin: 0;
+            padding: 1em;
+            position: absolute;
+            top: 1em;
+            left: 1em;
+            right: 1em;
+            bottom: 5em;
+            overflow: auto;
+            border-radius: 20px;
+        }
+
+        #form {
+            padding: 0 1em 0 1em;
+            margin: 0;
+            position: absolute;
+            bottom: 1em;
+            left: 0px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #message {
+            width: 500px;
+            height: 42px;
+            border-radius: 10px;
+            border: none;
+            font-family:'Comic Sans MS',serif;
+        }
+
+        #message:focus {
+            outline: none;
+        }
+
+        .userMessage{
+            font-family: "Comic Sans MS";
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        #button-submit {
+            background-color: #5bcb78;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        #button-submit:hover {
+            background-color: #055217;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div id="chat"></div>
+<form id="form">
+    <input type="text" id="message" size="64" autofocus/>
+    <input type="submit" id="button-submit" value="Send"/>
+</form>
+<script>
+    window.onload = function () {
+        let conn;
+        let messageText = document.getElementById("message");
+        let windowChat = document.getElementById("chat");
+
+        let maxNumberOfMessages = 50
+
+        function appendwindowChat(item) {
+            if (windowChat.children.length >= maxNumberOfMessages) {
+                windowChat.removeChild(windowChat.firstChild)
+            }
+
+            windowChat.appendChild(item);
+        }
+
+        document.getElementById("form").onsubmit = function () {
+            if (!conn) {
+                return false;
+            }
+            if (!messageText.value) {
+                return false;
+            }
+            conn.send(messageText.value);
+            messageText.value = "";
+            return false;
+        };
+
+        if (window["WebSocket"]) {
+            const params = window.location.href.split("/");
+            const roomId = params[params.length - 1];
+            conn = new WebSocket("ws://" + document.location.host + "/chat/ws/"+roomId);
+
+            conn.onclose = function () {
+                let item = document.createElement("div");
+                item.innerHTML = "<b>Connection closed</b>";
+                appendwindowChat(item);
+            };
+
+            conn.onmessage = function (evt) {
+                let messages = evt.data.split('\n');
+
+                for (let i = 0; i < messages.length; i++) {
+                    let item = document.createElement("div");
+                    item.className = "userMessage"
+                    item.innerText = messages[i];
+                    appendwindowChat(item);
+                }
+            };
+
+        } else {
+            let item = document.createElement("div");
+            item.innerHTML = "<b>Websockets are not supported on this browser</b>";
+            appendwindowChat(item);
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  mongo.db:
+    container_name: mongo_chat
+    image: mongo:3.4
+    command: mongod --maxConns 10000
+    volumes:
+      - mongo:/data/db
+      - ./config/storages/mongo/migrations/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    ports:
+      - "27017:27017"
+
+  rabbitmq:
+    platform: linux/amd64
+    image: 'bitnami/rabbitmq:3.8.9-debian-10-r87'
+    environment:
+      RABBITMQ_USERNAME: 'rabbitmq'
+      RABBITMQ_PASSWORD: 'rabbitmq'
+    ports:
+      - '15675:15675'
+      - '15672:15672'
+      - '5672:5672'
+      - '1883:1883'
+
+volumes:
+  mongo:
