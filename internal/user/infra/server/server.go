@@ -5,6 +5,7 @@ import (
 	"github.com/guil95/chat-go/internal/stock"
 	"github.com/guil95/chat-go/internal/user/infra/server/middleware"
 	"github.com/guil95/chat-go/internal/user/usecase"
+	"net/http"
 )
 
 type httpServer struct {
@@ -50,4 +51,10 @@ func (server httpServer) Api() {
 		})
 	}
 
+	groupIndex := server.handler.Group("", middleware.Auth())
+	{
+		groupIndex.GET("", func(ctx *gin.Context) {
+			ctx.HTML(http.StatusOK, "index.html", gin.H{})
+		})
+	}
 }
