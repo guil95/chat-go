@@ -2,7 +2,8 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/guil95/chat-go/internal/stock"
+	"github.com/gorilla/websocket"
+	"github.com/guil95/chat-go/internal/bot"
 	"github.com/guil95/chat-go/internal/user/infra/server/middleware"
 	"github.com/guil95/chat-go/internal/user/usecase"
 	"net/http"
@@ -10,22 +11,20 @@ import (
 
 type httpServer struct {
 	handler *gin.Engine
-	client  stock.Client
-	broker  stock.Broker
+	client  bot.Client
+	broker  bot.Broker
 	uc      *usecase.UseCase
+	wsConn  *websocket.Conn
 }
 
-func NewHTTPServer(handler *gin.Engine, client stock.Client, broker stock.Broker, uc *usecase.UseCase) *httpServer {
-	return &httpServer{handler, client, broker, uc}
+func NewHTTPServer(handler *gin.Engine, client bot.Client, broker bot.Broker, uc *usecase.UseCase, wsConn *websocket.Conn) *httpServer {
+	return &httpServer{handler, client, broker, uc, wsConn}
 }
 
 func (server httpServer) Api() {
 
 	groupUsers := server.handler.Group("/chat", middleware.Auth())
 	{
-		groupUsers.GET("/ws/:roomID", func(ctx *gin.Context) {
-			server.chatWs(ctx, server.client, server.broker)
-		})
 		groupUsers.GET("/:roomID", func(ctx *gin.Context) {
 			server.chatRoom(ctx)
 		})

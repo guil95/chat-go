@@ -3,7 +3,8 @@ package ws
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/guil95/chat-go/internal/stock"
+	"github.com/guil95/chat-go/internal/bot"
+	"github.com/guil95/chat-go/internal/chat"
 	"go.uber.org/zap"
 	"log"
 	"strings"
@@ -11,10 +12,11 @@ import (
 )
 
 type Subscription struct {
-	conn   *connection
-	client stock.Client
-	broker stock.Broker
-	room   string
+	conn       *connection
+	client     bot.Client
+	botBroker  bot.Broker
+	chatBroker chat.Broker
+	room       string
 }
 
 func (s Subscription) readConnectionToHub(username string) {
@@ -43,15 +45,25 @@ func (s Subscription) readConnectionToHub(username string) {
 		m := message{msg, s.room, username}
 		hub.broadcast <- m
 
+		_ = s.chatBroker.Send(&chat.Chat{
+			Message: string(msg),
+			User:    username,
+		})
+
 		if stockCode, ok := s.isStockCommand(string(msg)); ok {
 			fmt.Println(stockCode)
 			result, err := s.client.GetStock(strings.ToLower(stockCode), s.room)
 			if err != nil {
-				botErrMessage := message{[]byte(err.Error()), s.room, "financial-bot"}
+				botErrMessage := message{[]byte(err.Error()), s.room, "stock-bot"}
 				hub.broadcast <- botErrMessage
 			}
 
-			err = s.broker.Send(result)
+			_ = s.chatBroker.Send(&chat.Chat{
+				Message: fmt.Sprintf("%v stock is $%v", result.Code, result.Value),
+				User:    "stock-bot",
+			})
+
+			err = s.botBroker.Send(result)
 			if err != nil {
 				zap.S().Error(err)
 			}

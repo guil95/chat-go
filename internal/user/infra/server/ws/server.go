@@ -3,10 +3,8 @@ package ws
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/guil95/chat-go/internal/stock"
-	"github.com/guil95/chat-go/internal/user/infra/consumer"
-	"log"
-	"net/http"
+	"github.com/guil95/chat-go/internal/bot"
+	"github.com/guil95/chat-go/internal/chat"
 )
 
 type (
@@ -37,27 +35,20 @@ func init() {
 	go hub.Start()
 }
 
-func ServeWs(w http.ResponseWriter, r *http.Request, roomId, username string, client stock.Client, broker stock.Broker) {
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-
-	conn := &connection{ws: ws, send: make(chan []byte, 256)}
-	sub := Subscription{conn, client, broker, roomId}
+func ServeWs(
+	roomId,
+	username string,
+	client bot.Client,
+	botBroker bot.Broker,
+	chatBroker chat.Broker,
+	wsConn *websocket.Conn,
+) {
+	conn := &connection{ws: wsConn, send: make(chan []byte, 256)}
+	sub := Subscription{conn, client, botBroker, chatBroker, roomId}
 	hub.register <- sub
 
 	go sub.writeHubToConnection()
 	go sub.readConnectionToHub(username)
-
-	c := consumer.NewStockConsumer(broker, ws)
-	go c.Listen()
 }
 
 func (h *Hub) Start() {

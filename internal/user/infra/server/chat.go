@@ -2,7 +2,9 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/guil95/chat-go/internal/stock"
+	"github.com/gorilla/websocket"
+	"github.com/guil95/chat-go/internal/bot"
+	"github.com/guil95/chat-go/internal/chat"
 	"github.com/guil95/chat-go/internal/user/infra/server/ws"
 	"github.com/guil95/chat-go/services"
 	"net/http"
@@ -20,7 +22,7 @@ type room struct {
 	RoomID string `uri:"roomID" binding:"required"`
 }
 
-func (server httpServer) chatWs(ctx *gin.Context, client stock.Client, broker stock.Broker) {
+func ChatWs(ctx *gin.Context, client bot.Client, botBroker bot.Broker, chatBroker chat.Broker, wsConn *websocket.Conn) {
 	var req room
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -32,11 +34,11 @@ func (server httpServer) chatWs(ctx *gin.Context, client stock.Client, broker st
 	name, _ := services.NewJWTService().GetNameFromToken(token)
 
 	ws.ServeWs(
-		ctx.Writer,
-		ctx.Request,
 		req.RoomID,
 		name,
 		client,
-		broker,
+		botBroker,
+		chatBroker,
+		wsConn,
 	)
 }

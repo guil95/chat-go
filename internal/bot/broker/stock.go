@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/guil95/chat-go/config/broker/rabbitmq"
+	"github.com/guil95/chat-go/internal/bot"
 	"log"
 
-	"github.com/guil95/chat-go/internal/stock"
 	"github.com/streadway/amqp"
 )
 
@@ -17,7 +17,7 @@ type stockBroker struct {
 	queue amqp.Queue
 }
 
-func NewStockBroker(conn *amqp.Connection) stock.Broker {
+func NewStockBroker(conn *amqp.Connection) bot.Broker {
 	ch, err := conn.Channel()
 	if err != nil {
 		panic(err)
@@ -43,7 +43,7 @@ type Payload struct {
 	RoomID  string `json:"roomID"`
 }
 
-func (s stockBroker) Send(stock *stock.Stock) error {
+func (s stockBroker) Send(stock *bot.Stock) error {
 	if stock.Value == "N/D" {
 		return errors.New("stock value invalid")
 	}
@@ -88,7 +88,7 @@ func (s stockBroker) Consume(messageReceived chan []byte) error {
 	return nil
 }
 
-func (s stockBroker) retrievePayload(stock *stock.Stock) []byte {
+func (s stockBroker) retrievePayload(stock *bot.Stock) []byte {
 	payload := Payload{
 		RoomID:  stock.Room,
 		Message: fmt.Sprintf("stock-bot: %v stock is $%v", stock.Code, stock.Value),

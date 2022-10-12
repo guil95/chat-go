@@ -1,6 +1,6 @@
-package stock
+package chat
 
 type Broker interface {
-	Send(stock *Stock) error
+	Send(chat *Chat) error
 	Consume(messageReceived chan []byte) error
 }

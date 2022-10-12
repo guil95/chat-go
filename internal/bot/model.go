@@ -1,4 +1,4 @@
-package stock
+package bot
 
 type Stock struct {
 	Code  string `json:"code"`

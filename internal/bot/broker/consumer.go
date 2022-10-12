@@ -1,19 +1,19 @@
-package consumer
+package broker
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/guil95/chat-go/internal/stock"
+	"github.com/guil95/chat-go/internal/bot"
 	"time"
 )
 
 type Consumer struct {
-	broker stock.Broker
+	broker bot.Broker
 	wsConn *websocket.Conn
 }
 
-func NewStockConsumer(broker stock.Broker, wsConn *websocket.Conn) *Consumer {
+func NewStockConsumer(broker bot.Broker, wsConn *websocket.Conn) *Consumer {
 	return &Consumer{broker, wsConn}
 }
 

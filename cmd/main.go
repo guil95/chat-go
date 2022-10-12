@@ -13,8 +13,9 @@ import (
 func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-	go server.RunHTTPServer(quit)
+	cs := server.ConfigServer{}
+	
+	go cs.RunHTTPServer(quit)
 
 	<-quit
 
