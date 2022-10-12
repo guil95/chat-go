@@ -1,10 +1,8 @@
 package broker
 
 import (
-	"github.com/guil95/chat-go/internal/chat"
-	"log"
-
 	"github.com/guil95/chat-go/config/broker/rabbitmq"
+	"github.com/guil95/chat-go/internal/chat"
 	"github.com/streadway/amqp"
 )
 
@@ -73,7 +71,6 @@ func (s stockBroker) Consume(messageReceived chan []byte) error {
 
 	go func() {
 		for message := range messages {
-			log.Printf(" > Received message: %s\n", message.Body)
 			messageReceived <- message.Body
 		}
 	}()

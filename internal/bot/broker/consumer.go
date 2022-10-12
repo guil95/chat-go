@@ -2,7 +2,6 @@ package broker
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/guil95/chat-go/internal/bot"
 	"time"
@@ -38,8 +37,6 @@ func (c *Consumer) Listen() {
 			if err != nil {
 				return
 			}
-
-			fmt.Println(fmt.Sprintf("message received %v", string(m)))
 		}
 	}
 }
